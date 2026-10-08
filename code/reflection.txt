@@ -1,6 +1,6 @@
-I learned that keeping lineage makes a payroll result easier to trust: the
-copy-add-return steps preserve the original text while adding cleaned values.
-The part I had to think through most carefully was the left merge. The timesheet
+I learned that keeping lineage makes a payroll result easier to trust. The
+copy-add-return steps preserve the original text while adding cleaned values that are universal.
+I had to think through most carefully was the left merge. The timesheet
 and roster have different grains, and using the timesheet as the left frame
 ensures a person with no roster match stays in the result with NaN roster data
 instead of being silently dropped. The pay label can then flag that row as
@@ -8,6 +8,6 @@ unmatched.
 
 I also learned to keep the app focused on assembly: it calls the payroll
 pipeline, uses Series.sum() for totals, and presents the result and export
-without repeating the cleaning or pay calculations. To practice, I will make a
-small pair of DataFrames with one matching and one unknown employee ID, run the
+without repeating the cleaning or pay calculations.
+ To practice, I will make a small pair of DataFrames with one matching and one unknown employee ID, run the
 left merge, and check the rows and NaN values before testing the full pipeline.

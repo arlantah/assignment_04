@@ -20,7 +20,9 @@ from payroll import build_payroll, load_employees, load_timesheet, payroll_expor
 
 
 st.title("Payroll")
-st.write("Upload this week's timesheet to review payroll and download the provider's CSV.")
+st.write(
+    "Upload this week's timesheet to review payroll and download the provider's CSV."
+)
 
 employees = load_employees()
 upload = st.file_uploader("Upload a weekly timesheet CSV", type="csv", key="timesheet")
