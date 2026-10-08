@@ -14,27 +14,47 @@ Run it:  Run and Debug -> "Streamlit Run: Current File"   (see README Reference 
 Test it: pytest tests/test_pipeline.py -k app
 """
 
-# --- The page ---------------------------------------------------------------------
-#
-# No scaffolding. Every function this page needs already exists in the payroll
-# package, and every widget it needs you used in Assignment 03. README Step 8 has
-# the exact widgets, keys and labels; the tests in tests/test_pipeline.py -k app
-# check them.
-#
-# The shape, in words:
-#
-#   title and a sentence of instructions
-#   roster  <- load_employees()                      (fixed; not uploaded)
-#   upload  <- st.file_uploader, key="timesheet"     (returns None until chosen)
-#   if there is an upload:
-#       timesheet <- load_timesheet(upload)
-#       payroll   <- build_payroll(timesheet, roster)   one call does all the work
-#       the pay period (payroll_date) as a subheader
-#       four st.metric cards in st.columns(4) — totals are .sum() on a Series,
-#           counts are len() of a boolean-indexed frame
-#       st.warning naming the unmatched employee_ids, or st.success if none
-#       st.dataframe(payroll) — the lineage table, raw and computed side by side
-#       st.download_button, key="download": payroll_export(payroll).to_csv(index=False)
-#
-# What the page does NOT do: arithmetic on rows, cleaning, merging. If you find
-# yourself writing a loop or an apply here, that logic belongs in the package.
+import streamlit as st
+
+from payroll import build_payroll, load_employees, load_timesheet, payroll_export
+
+
+st.title("Payroll")
+st.write("Upload this week's timesheet to review payroll and download the provider's CSV.")
+
+employees = load_employees()
+upload = st.file_uploader("Upload a weekly timesheet CSV", type="csv", key="timesheet")
+
+if upload is not None:
+    timesheet = load_timesheet(upload)
+    payroll = build_payroll(timesheet, employees)
+    payroll_date = payroll["payroll_date"].iloc[0]
+    st.subheader(f"Pay period ending {payroll_date}")
+
+    total_hours = payroll["hours_worked"].sum()
+    total_pay = payroll["gross_pay"].sum()
+    overtime = payroll[payroll["pay_type"] == "overtime"]
+    unmatched = payroll[payroll["pay_type"] == "unmatched"]
+    employees_paid = len(payroll[payroll["pay_type"] != "unmatched"])
+
+    metrics = st.columns(4)
+    metrics[0].metric("Employees paid", employees_paid)
+    metrics[1].metric("Total hours", f"{total_hours:g}")
+    metrics[2].metric("Total gross pay", f"${total_pay:,.2f}")
+    metrics[3].metric("Overtime weeks", len(overtime))
+
+    if len(unmatched) > 0:
+        employee_ids = ", ".join(unmatched["employee_id"])
+        st.warning(f"These employee IDs are not on the roster: {employee_ids}")
+    else:
+        st.success("All employees matched to the roster.")
+
+    st.dataframe(payroll)
+    export = payroll_export(payroll)
+    st.download_button(
+        "Download payroll CSV for the provider",
+        data=export.to_csv(index=False),
+        file_name=f"payroll_{payroll_date}.csv",
+        mime="text/csv",
+        key="download",
+    )
