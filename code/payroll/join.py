@@ -41,7 +41,7 @@ def merge_employees(timesheet: pd.DataFrame, employees: pd.DataFrame) -> pd.Data
     The result has every timesheet column with its original values, every
     roster column, and the same number of rows as the timesheet, in the same
     order. Match on `employee_id`, which both frames call by the same name — so
-    you can use `on=` instead of `left_on=`/`right_on=`. (`how="left"` with the
+    you     can use `on=` instead of `left_on=`/`right_on=`. (`how="left"` with the
     timesheet on the left, or `how="right"` with the frames swapped, both say
     "keep the timesheet's side" — pick whichever reads best to you.)
     """
